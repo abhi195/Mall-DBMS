@@ -1,0 +1,127 @@
+CREATE TABLE Customer (
+first_name VARCHAR(20) NOT NULL,
+last_name VARCHAR(20) NOT NULL,
+Address VARCHAR(50),
+Cust_ID DECIMAL(9,0),
+Email_ID VARCHAR(30),
+DOB DATE,
+sex CHAR(1),
+Contact_No VARCHAR(20),
+PRIMARY KEY (Cust_ID)
+);
+
+CREATE TABLE Discount(
+Privilege_points DECIMAL(9,0),
+Discount_rate DECIMAL(9,0),
+PRIMARY KEY(Privilege_points)
+);
+
+CREATE TABLE Customer_Card_Details(
+Card_number VARCHAR(20),
+Card_exp_date DATE NOT NULL,
+Privilege_points DECIMAL(6,0),
+Card_type VARCHAR(20),
+PRIMARY KEY (Card_number),
+FOREIGN KEY(Privilege_points) REFERENCES Discount(Privilege_points)
+ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE Customer_Card_Number(
+Cust_ID DECIMAL(9,0),
+Card_number VARCHAR(20),
+FOREIGN KEY (Cust_ID) REFERENCES Customer(Cust_ID)
+ON DELETE CASCADE ON UPDATE CASCADE,
+FOREIGN KEY(Card_number) REFERENCES Customer_Card_Details(Card_number)
+ON DELETE CASCADE ON UPDATE CASCADE,
+PRIMARY KEY (Cust_ID,Card_number)
+);
+
+CREATE TABLE Store (
+Store_id VARCHAR(20),
+Store_name VARCHAR(20) NOT NULL,
+PRIMARY KEY (Store_id)
+);
+
+CREATE TABLE Mall(
+Mall_id VARCHAR(20),
+Mall_name VARCHAR(30) NOT NULL,
+Mall_location VARCHAR(30) NOT NULL,
+PRIMARY KEY(Mall_id)
+);
+
+CREATE TABLE Purchase_Record (
+Invoice_number VARCHAR(50),
+Cust_id DECIMAL(9,0),
+Product_id VARCHAR(50),
+date_of_purchase DATE,
+quantity DECIMAL(100,0),
+Mall_id VARCHAR(20),
+PRIMARY KEY (Invoice_number),
+FOREIGN KEY(Cust_id) REFERENCES Customer(Cust_ID)
+ON DELETE CASCADE ON UPDATE CASCADE,
+FOREIGN KEY(Mall_id) REFERENCES Mall(Mall_id)
+ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE Categories (
+Category_id VARCHAR(20),
+Category_name VARCHAR(20) NOT NULL,
+PRIMARY KEY(Category_id)
+);
+
+CREATE TABLE Product (
+Product_id VARCHAR(50),
+Product_name VARCHAR(20) NOT NULL,
+Product_desc VARCHAR(50),
+Product_price DECIMAL(10,0) NOT NULL,
+Category_id VARCHAR(20),
+Store_id VARCHAR(20),
+PRIMARY KEY (Product_id),
+FOREIGN KEY(Store_id) REFERENCES Store(Store_id)
+ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE Storage_Store_Mapping(
+Storage_id VARCHAR(20),
+Store_id VARCHAR(20),
+FOREIGN KEY(Store_id) REFERENCES Store(Store_id)
+ON DELETE CASCADE ON UPDATE CASCADE,
+PRIMARY KEY(Storage_id)
+);
+
+CREATE TABLE Inventory (
+Storage_id VARCHAR(20),
+Product_id VARCHAR(50),
+Quantity DECIMAL(1000,0),
+Min_stock_required DECIMAL(5,0) NOT NULL,
+FOREIGN KEY(Product_id) REFERENCES Product(Product_id)
+ON DELETE CASCADE ON UPDATE CASCADE,
+FOREIGN KEY(Storage_id) REFERENCES Storage_Store_Mapping(Storage_id)
+ON DELETE CASCADE ON UPDATE CASCADE,
+PRIMARY KEY (Storage_id, Product_id)
+);
+
+CREATE TABLE Store_Location (
+Store_id VARCHAR(20),
+Mall_id VARCHAR(20),
+FOREIGN KEY(Store_id) REFERENCES Store(Store_id)
+ON DELETE CASCADE ON UPDATE CASCADE,
+FOREIGN KEY(Mall_id) REFERENCES Mall(Mall_id)
+ON DELETE CASCADE ON UPDATE CASCADE,
+PRIMARY KEY(Store_id, Mall_id)
+);
+
+CREATE TABLE Employee (
+Emp_name VARCHAR(30) NOT NULL,
+Ssn DECIMAL(9,0),
+Emp_address VARCHAR(30),
+Emp_sex CHAR(1),
+Emp_salary DECIMAL(10,0),
+Supervisor_ssn DECIMAL(10,0),
+Emp_email VARCHAR(30),
+Store_id VARCHAR(20) NOT NULL,
+PRIMARY KEY (Ssn),
+FOREIGN KEY (Supervisor_ssn) REFERENCES employee(Ssn)
+ON DELETE CASCADE ON UPDATE CASCADE,
+FOREIGN KEY (Store_id) REFERENCES Store(Store_id)
+);

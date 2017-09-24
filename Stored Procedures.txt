@@ -1,0 +1,159 @@
+1) To Compute the average salary of employees given store name:
+
+CREATE OR REPLACE FUNCTION Compute_avg_salary(strName VARCHAR) RETURNS REAL AS
+$BODY$
+DECLARE
+	salary_sum int;
+	emp_count int;
+	avg_salary real;
+	emp employee%rowtype;
+BEGIN
+	salary_sum := 0;
+	emp_count := 0;
+	FOR emp IN SELECT DISTINCT e.* FROM employee e JOIN store s on e.store_id=s.store_id WHERE s.store_name = strName
+	LOOP
+		IF emp.emp_salary IS NOT NULL THEN
+			salary_sum := salary_sum + emp.emp_salary;
+			emp_count := emp_count + 1;
+		END IF;
+	END LOOP;
+	avg_salary := salary_sum / emp_count;
+	RETURN avg_salary;
+	EXCEPTION
+		WHEN division_by_zero THEN
+			RAISE NOTICE 'No such store name exists.';
+			RETURN NULL;
+
+
+END
+$BODY$
+LANGUAGE 'plpgsql';
+
+2) The customers will get an increment in their privilege points according to the amount of shopping they did from the mall.
+
+
+  CREATE OR REPLACE FUNCTION points_update()
+  RETURNS void AS
+$BODY$
+DECLARE 
+	cid customer_card_number.cust_id%type;
+ 	cno customer_card_number.card_number%type; 
+cid1 customer_card_number.cust_id%type; 
+bought integer;
+
+
+BEGIN 
+   cid1=null;
+   for cid in select cust_id from customer_card_number loop
+	select card_number into cno from customer_card_number where cust_id=cid;
+	select cust_id into cid1 from purchase_record where cust_id=cid limit 1;
+		
+	IF cid1 IS NOT NULL THEN
+		select quantity*product_price into bought from purchase_record natural join product where cust_id=cid1;
+		UPDATE customer_card_details set privilege_points=privilege_points+bought/500 WHERE card_number=cno;
+	END IF;
+	cid1=null;
+	END LOOP;
+	return;
+	
+	
+END;
+$BODY$
+  LANGUAGE ‘plpgsql’;
+
+3) The function will display the discount which the individual will receive in the next transaction. ( INPUT: individual’s name)
+
+
+CREATE OR REPLACE FUNCTION discount1(f_name character varying, l_name character varying) returns numeric(9,0)  AS
+$BODY$
+DECLARE
+	cid customer.cust_id%type; cno customer_card_number.card_number%type; points customer_card_details.privilege_points%type; disc discount.discount_rate%type;
+BEGIN
+	select cust_id into cid from customer where first_name=f_name AND last_name=l_name;
+	select card_number into cno from customer_card_number where cust_id=cid;
+	select privilege_points into points from customer_card_details where card_number=cno;
+	select discount_rate into disc from discount where privilege_points=points;
+	return disc/100;
+END;
+$BODY$
+LANGUAGE 'plpgsql' ;
+
+4) Retrieve all products under any supplier
+
+CREATE OR REPLACE FUNCTION allProductsAvailable (supplier character varying(30)) RETURNS
+SETOF varchar(30) AS $$
+
+
+DECLARE
+    res varchar(30);
+BEGIN
+    FOR res in (SELECT product_name
+    FROM store NATURAL JOIN product
+    WHERE store_name=supplier)
+    LOOP
+   	 return next res;
+    END LOOP;
+
+
+END;
+$$ LANGUAGE plpgsql;
+
+5) Products with stock less than min required stock
+
+CREATE OR REPLACE FUNCTION availableStockLessThanMinStock() RETURNS
+SETOF varchar(30) AS $$
+
+
+DECLARE
+    res varchar(30);
+BEGIN
+    FOR res in (SELECT product_name
+    FROM product NATURAL JOIN inventory
+    WHERE quantity<min_stock_required)
+    LOOP
+   	 return next res;
+    END LOOP;
+
+
+END;
+$$ LANGUAGE plpgsql;
+
+6) List all employees working in a store and salary>=100000.
+
+CREATE OR REPLACE FUNCTION listEmployeesForStoreName(nameofstore character varying(30)) RETURNS
+SETOF varchar(30) AS $$
+
+
+DECLARE
+    res varchar(30);
+BEGIN
+    FOR res in (SELECT emp_name
+    FROM employee NATURAL JOIN store
+    WHERE store_name=nameofstore AND emp_salary >= 100000)
+    LOOP
+   	 return next res;
+    END LOOP;
+
+
+END;
+$$ LANGUAGE plpgsql;
+
+7) List employees whose supervisors have salary more than 10,00,000
+
+CREATE OR REPLACE FUNCTION employeesWhoseSupervisorsHaveSalaryMoreThan1000000() RETURNS
+SETOF varchar(30) AS $$
+
+
+DECLARE
+    res varchar(30);
+BEGIN
+    FOR res in (SELECT DISTINCT n.emp_name
+    FROM employee as m JOIN employee as n ON m.supervisor_ssn=n.ssn
+    WHERE n.emp_salary>1000000)
+    LOOP
+   	 return next res;
+    END LOOP;
+
+
+END;
+$$ LANGUAGE plpgsql;

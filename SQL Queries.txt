@@ -1,0 +1,58 @@
+﻿1) Retrieve all the products available under Supplier ‘Reliance Ltd.’.
+
+→ Select Product_name from Store NATURAL JOIN Product WHERE Store_name='Reliance Ltd.';
+
+
+2) Retrieve the total sales under the category electronics in the month November of 2015.
+
+→ SELECT sum(quantity*product_price) as TOTAL_SALES FROM  (SELECT * FROM  ((Categories NATURAL JOIN Product) AS n JOIN purchase_record as m ON n.Product_id=m.Product_id) AS x WHERE Category_name='Electronics' AND date_of_purchase >= '01/11/2015' AND date_of_purchase <= '30/11/2015') as y ;
+
+
+3) Retrieve the highest selling product under the category garments.
+
+→ SELECT product_name,sum(quantity) FROM (SELECT * FROM  ((Categories NATURAL JOIN Product) AS n JOIN purchase_record as m ON n.Product_id=m.Product_id) AS x WHERE Category_name='Garments') as y GROUP BY product_name ORDER BY sum(quantity) desc LIMIT 1;
+
+
+4) Retrieve the Details of the top 5 customers who made the highest purchase in the year 2016.
+
+→ SELECT * FROM (SELECT cust_id,sum(quantity*product_price) FROM ((purchase_record NATURAL JOIN Product AS n) NATURAL JOIN Customer as m ) as d WHERE date_of_purchase >= '01/01/2016' AND date_of_purchase <= '31/12/2016' GROUP BY cust_id ORDER BY sum(quantity*product_price) desc limit 5) as Q NATURAL JOIN Customer ;
+
+
+5) Retrieve the top 10 suppliers on the basis of their sales.
+
+→ SELECT store_name , sum(quantity*product_price) FROM  ((purchase_record NATURAL JOIN Product) AS n Natural JOIN Store as m ) AS x GROUP BY Store_name ORDER BY sum(quantity*product_price) desc limit 10 ;
+
+
+6) Retrieve the details of the mall which made the highest number of sales in the year 2016.
+
+→ SELECT * FROM (Select Mall_id,  sum(quantity*Product_price) FROM  (Select * FROM (Mall NATURAL JOIN Purchase_record) AS m NATURAL JOIN Product as n) as d WHERE date_of_purchase >= '01/01/2016' AND date_of_purchase <= '31/12/2016' GROUP BY Mall_id ORDER BY sum(quantity*product_price) desc limit 5) as Q NATURAL JOIN mall;
+
+
+7) Retrieve all the suppliers who sell electronics.
+
+→ Select DISTINCT Store_name FROM ((Store NATURAL JOIN Product) as m NATURAL JOIN Categories as n) WHERE Category_name = 'Electronics';
+
+
+8) Retrieve the name of the movie which made the highest grossing in all malls combined in the year 2016.
+
+→ Select product_name, sum(quantity*Product_price) FROM(Select * FROM (product NATURAL JOIN Purchase_record AS m NATURAL JOIN Categories as n) WHERE Category_name='Entertainment' ) as d WHERE date_of_purchase >= '01/01/2016' AND date_of_purchase <= '31/12/2016' GROUP BY Product_name ORDER BY sum(quantity*product_price) desc limit 1;
+
+
+9) Retrieve the list of products across all categories where the available stock is less than its minimum required stock.
+
+→SELECT product_name from product NATURAL JOIN inventory WHERE quantity<min_stock_required; 
+
+
+10) Retrieve the customers who have privilege points greater than 300 and have card expiry date of 2022.
+
+→ Select first_name, last_name FROM ((Customer NATURAL JOIN Customer_card_number) NATURAL JOIN Customer_card_details) as y WHERE Privilege_points > 300 AND Card_exp_date >= ‘01/01/2022’ AND Card_exp_date <= ‘31/12/2022’;
+
+
+11) List the name of employees that work for Store A and have salary greater than 1,00,000 INR.
+
+→ SELECT Emp_name from Employee NATURAL JOIN Store WHERE Store_name=’Reliance Ltd.’ AND Emp_salary >= 100000 ;
+
+
+12) List the name of employees whose supervisor’s have salary greater than 10,00,000 INR.
+
+→ SELECT DISTINCT n.emp_name FROM (Employee as m JOIN Employee as n ON m.supervisor_ssn=n.ssn) WHERE n.Emp_salary> 1000000 ;
